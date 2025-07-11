@@ -8,6 +8,8 @@ use transaction::Transaction;
 use actix_web::{get, post, web, App, HttpServer, Responder};
 use actix_cors::Cors;
 use std::sync::Mutex;
+use std::env;
+
 
 #[get("/chain")]
 async fn get_chain(data: web::Data<Mutex<Blockchain>>) -> impl Responder {
@@ -48,6 +50,9 @@ async fn main() -> std::io::Result<()> {
         bc
     }));
 
+    let port = env::var("PORT").unwrap_or_else(|_| "8080".to_string());
+    let addr = format!("0.0.0.0:{}", port);
+
     HttpServer::new(move || {
         App::new()
             .wrap(Cors::permissive())
@@ -56,7 +61,7 @@ async fn main() -> std::io::Result<()> {
             .service(add_block)
             .service(is_valid)
     })
-    .bind(("0.0.0.0", 8080))?  //.bind(("127.0.0.1", 8080))?
+    .bind(addr)?  // <-- hier
     .run()
     .await
 }
